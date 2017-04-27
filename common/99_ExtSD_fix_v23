@@ -1,0 +1,132 @@
+#!/system/bin/sh
+
+LF=/dev/null
+# LF=/data/ExtSD_Fix_RW_initd.log
+LF=/cache/ExtSD_Fix_RW_initd.log
+
+rm "${LF}"
+touch "${LF}"
+exec >> "${LF}" 2>&1
+
+echo "********* $(date -u "+%Y/%m/%d %H:%M:%S") **********"
+
+echo "- Detecting busybox"
+BBbin=""
+for bd in "/dev/busybox/" "/data/busybox/" "/data/magisk/" "/sbin/" "/vendor/bin/" "/system/sbin/" "/system/bin/" "/system/xbin/"
+do
+   if [ -f "${bd}busybox" ]; then
+      BBbin=${bd}busybox
+      break
+   fi
+done
+if [ "${BBbin}" = "" ]; then
+   echo "  BusyBox not found"
+   exit
+fi
+
+is_mounted() {
+   if [ ! -z "$2" ]; then
+      "${BBbin}" cat /proc/mounts | grep $1 | grep $2, >/dev/null
+   else
+      "${BBbin}" cat /proc/mounts | grep $1 >/dev/null
+   fi
+   return $?
+}
+
+set_perm() {
+   us=$(id -u $1)
+   gr=$(id -g $2)
+   chown ${us}.${gr} $4
+   chown ${us}:${gr} $4
+   chmod $3 $4
+   chcon -h u:object_r:system_file:s0 $4
+   chcon u:object_r:system_file:s0 $4
+}
+
+fpath_ori="/data/system/packages.xml"
+fpath_bak="${fpath_ori}-RW.bak"
+fpath_tmp="${fpath_ori}-RW.tmp"
+
+# mounts system as rw
+# if (! is_mounted /system rw); then
+#    echo "- Mount system RW"
+#    "${BBbin}" mount -o rw,remount /system
+# fi
+# if (! is_mounted /system rw); then
+#    echo "- Mount again system RW"
+#    "${BBbin}" mount -o rw,remount /system /system
+# fi
+
+# identifies permissions and ownership
+echo "- Save permissions and ownerships"
+own=$(ls -l "${fpath_ori}" | sed 's#.* 1 ##g' | sed 's# .*##g')
+gro=$(ls -l "${fpath_ori}" | sed "s#.* ${own} ##g" | sed 's# .*##g')
+perms=$(ls -l "${fpath_ori}" | sed 's# .*##g')
+op=0
+if [ "${perms:1:1}" = "r" ] ; then
+   op=$((op+4))
+fi
+if [ "${perms:2:1}" = "w" ] ; then
+   op=$((op+2))
+fi
+if [ "${perms:3:1}" = "x" ] ; then
+   op=$((op+1))
+fi
+gp=0
+if [ "${perms:4:1}" = "r" ] ; then
+   gp=$((gp+4))
+fi
+if [ "${perms:5:1}" = "w" ] ; then
+   gp=$((gp+2))
+fi
+if [ "${perms:6:1}" = "x" ] ; then
+   gp=$((gp+1))
+fi
+wp=0
+if [ "${perms:7:1}" = "r" ] ; then
+   wp=$((wp+4))
+fi
+if [ "${perms:8:1}" = "w" ] ; then
+   wp=$((wp+2))
+fi
+if [ "${perms:9:1}" = "x" ] ; then
+   wp=$((wp+1))
+fi
+
+# changes permissions
+echo "- Adjust permissions"
+"${BBbin}" chmod 0666 "${fpath_ori}"
+
+# add permisions
+echo "- Add permissions to apps"
+"${BBbin}" awk '/<perms>/ {pMS=1;pES=1} ;
+         pMS && /WRITE_MEDIA_STORAGE/{pMS=0} ;
+         pMS && /<\/perms>/{print "            <item name=\"android.permission.WRITE_MEDIA_STORAGE\" granted=\"true\" flags=\"0\" />";pMS=0;} 0 ;
+         pES && /WRITE_EXTERNAL_STORAGE/{pES=0} ;
+         pES && /<\/perms>/{print "            <item name=\"android.permission.WRITE_EXTERNAL_STORAGE\" granted=\"true\" flags=\"0\" />";pES=0;} 1 ;'\
+            "${fpath_ori}" > "${fpath_tmp}"
+
+# feeds back into the original file
+echo "- Write changes back to file"
+"${BBbin}" cat "${fpath_tmp}" > "${fpath_ori}"
+
+# removes temporary file
+echo "- Remove temporary file"
+"${BBbin}" rm "${fpath_tmp}"
+
+# changes permissions
+echo "- Apply back permissions and ownership"
+"${BBbin}" chown ${own}:${gro} "${fpath_ori}"
+"${BBbin}" chmod 0${op}${gp}${wp} "${fpath_ori}"
+
+# mounts system as ro
+# if (! is_mounted /system ro); then
+#    echo "- Mount system RO"
+#    "${BBbin}" mount -o ro,remount /system /system
+# fi
+# if (! is_mounted /system ro); then
+#    echo "- Mount again system RO"
+#    "${BBbin}" mount -o ro,remount /system
+# fi
+
+echo "********* $(date -u "+%Y/%m/%d %H:%M:%S") **********"

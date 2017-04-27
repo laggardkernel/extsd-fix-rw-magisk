@@ -1,0 +1,43 @@
+v2.9b - 2016-06-09
+    - Added double flashing revert for MM.
+v2.8b - 2016-06-09
+    - Added more logging to:
+        - during flashing: /data/ExtSD_Fix_RW_inst.log
+        - during boot: /data/ExtSD_Fix_RW_initd.log
+v2.7b - 2016-06-08
+    - Renamed script,
+    - Changed permissions.
+v2.6b - 2016-06-07
+    - Changed permissions.
+v2.5b - 2016-06-07
+    - Changed permissions,
+    - Added support for limited backup files.
+v2.4b - 2016-06-05
+    - Corrected bugs.
+v2.3b - 2016-06-02
+    - Included debug messages.
+v2.2b - 2016-06-02
+    - Corrected bugs. "ERROR:2" should be fixed.
+v2.1b - 2016-05-19
+    - Implemented solution from [here](http://forum.xda-developers.com/showpost.php?p=66875227&postcount=232) and [here](http://forum.xda-developers.com/showpost.php?p=66914278&postcount=254).
+v1.9b - 2016-05-04
+    - Implemented solution from [here](http://forum.xda-developers.com/showpost.php?p=66554730&postcount=27). **PLEASE TEST AND REPORT.**
+v1.8b - 2016-02-04
+    - Corrected bug for Marshmallow.
+v1.7b - 2016-02-02
+    - Added support for Marshmallow.
+v1.6b - 2016-01-27
+    - Added revert on second run.
+v1.5b - 2016-01-26
+    - Corrected bug in check for API version.
+v1.4b - 2016-01-26
+    - Changed format of backed up filename.
+    - Added check for API version ( 19<= API <= 22 ).
+v1.3b - 2016-01-22
+    - Backed up file is renamed with time and date.
+v1.2b - 2016-01-21
+    - Moved code into update-binary.
+v1.1b - 2016-01-19
+    - Removed testing commands.
+v1.0b - 2016-01-18
+    - Initial submission

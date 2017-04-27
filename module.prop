@@ -1,0 +1,10 @@
+id=extsd-fix-rw
+name=ExtSD RW Permissions Fix
+version=v2.9b
+versionCode=290
+author=rufus.wilson
+description=The script appends the correct permissions to necessary file to gain writing permissions for external SD cards, made by rufus.wilson. Module adapted by laggardkernel.
+support=http://forum.xda-developers.com/android/software/fix-extsd-fix-v1-0b-2016-01-18-t3296266
+donate=https://forum.xda-developers.com/member.php?u=6935794
+cacheModule=false
+template=3
